@@ -1,41 +1,21 @@
-# CEREBRON Ω — C256 THEORY FARM
+# CEREBRON OMEGA — COLLATZ THEORY FARM — CHECKPOINT 2026-09-17
 
-## Checkpoint
-We study the accelerated odd Collatz map T(x)=(3x+1)/2^{v2(3x+1)}.
+MISSION: work on the current arbitrary-N cycle obstruction. Do not restart. Do not claim Collatz solved.
 
-Verified inputs from the master hub:
-- finite valuation words are locally realizable;
-- pure symbolic transition graph is complete;
-- scalar Kraft mass is critical;
-- same-band contraction alone does not control excursions;
-- total multiplier Lambda=3^n/2^A can be arbitrarily close to 1;
-- balanced mechanical/Sturmian valuation words can keep partial discrepancies bounded;
-- for a fixed word W, real first-return constraints define an interval I_W=[L_W,U_W) or the empty set;
-- the valuation word fixes one 2-adic start cylinder x0≡rho_W mod 2^{A_n+1};
-- if |I_W(X)|=c_W X+O(1) with c_W>0, then for fixed W and large X the 2-adic residue alone cannot prevent intersection;
-- current literature suggests considering simultaneously real, 2-adic and terminal 3-adic compatibility for quasi-critical mechanical codes;
-- CYCLES OPEN.
+Core exact state:
+- T(x)=(3x+1)/2^{v2(3x+1)} on positive odds.
+- For a hypothetical odd cycle: A=sum a_i, D=2^A-3^N>0, delta=A ln2-N ln3>0.
+- Binary critical runs: 1^{u_j}2^{r_j}.
+- H-factorization: 3^{u_j}t_j-1=4^{r_j}h_j and 2^{u_{j+1}}t_{j+1}-1=3^{r_j}h_j.
+- h_j odd, h_j ≡ 5 (mod 6), h_j>=5.
+- H-LOG exact: delta=sum_j ln[(1+(3^{r_j}h_j)^(-1))/(1+(4^{r_j}h_j)^(-1))].
+- H-COUPLING exact: 2^{u_{j+1}+2r_{j+1}}h_{j+1}-3^{u_{j+1}+r_j}h_j=3^{u_{j+1}}-2^{u_{j+1}}.
+- 3-adic address: h_j ≡ -4^{-r_j} (mod 3^{u_j}), ord_{3^u}(4)=3^{u-1}.
 
-## Mission
-Search for a rigorous arbitrary-N obstruction or a formal no-go theorem for the route based on balanced/Sturmian exponent codes.
+Primary target: derive a genuinely collective, non-tautological obstruction or upper bound from H-COUPLING + H-LOG + 3-adic constraints. Seek a theorem of the form small h -> large r OR compensatory cost elsewhere, or a monotone inter-run invariant.
 
-Focus on:
-1. exact affine prefix formula and endpoint congruences;
-2. simultaneous REAL × 2-ADIC × 3-ADIC compatibility;
-3. Sturmian return words / irrational-rotation first-return structure;
-4. Diophantine restrictions from log_2(3);
-5. whether positive-width first-return windows can survive arbitrarily long;
-6. whether any residue or return-word constraint forces eventual incompatibility;
-7. explicit counterexamples to proposed universal lemmas.
+Firewall: Dx_i=C_i, D|C_i, simple CRT, simple rotation differences, or any algebraic reconstruction of the cycle are EQUIVALENT-HARDNESS unless an independent new restriction appears.
 
-Required output from every agent:
-- CLAIMS PROVED;
-- CLAIMS REFUTED;
-- GAPS;
-- NEW LEMMA CANDIDATE;
-- FORMAL DERIVATION;
-- COUNTEREXAMPLE SEARCH;
-- VERDICT CYCLES OPEN/CLOSED;
-- NEXTLOCK UNIQUE.
+ARITHMETIC COMPRESSION: SYMBOLIC REDUCTION BEFORE MULTIPLICATION. Factor before expansion; reuse powers/residues/recurrences; filter modulo 2^k or 3^k before large products; cache rho_u(h), Q_u(h), f(r); use log1p representations for H-LOG when only bounds are needed. Every optimization must preserve exactness and report COST BEFORE / TRANSFORMATION / COST AFTER / EQUIVALENCE CHECK / SAVED MULTIPLICATIONS.
 
-Never claim closure without a complete arbitrary-N contradiction.
+Required output per role: ESTABLISHED / NEW DERIVATION / FALSIFICATION / GAP / NEXT LEMMA / STATUS in {VERIFIED,NARROWED,REJECTED,DUPLICATE,EQUIVALENT-HARDNESS,OPEN}. COMPUTATION != PROOF. FINITE TEST != UNIVERSAL PROOF. CONSENSUS != TRUTH.
