@@ -1,0 +1,120 @@
+name: CEREBRON Collatz Theory Farm C256
+
+on:
+  push:
+    paths:
+      - '.github/workflows/theory-farm.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: plan
+        shell: bash
+        run: |
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          roles=[
+            ('THEORETICAL_MATHEMATICIAN','huggingface-projects/llama-3.2-3B-Instruct','llama-3.2'),
+            ('NUMBER_THEORIST','huggingface-projects/llama-3.2-3B-Instruct','llama-3.2'),
+            ('DYNAMICAL_SYSTEMS_SPECIALIST','huggingface-projects/llama-3.2-3B-Instruct','llama-3.2'),
+            ('COMBINATORICS_SPECIALIST','huggingface-projects/llama-3.2-3B-Instruct','llama-3.2'),
+            ('STURMIAN_SPECIALIST','huggingface-projects/gemma-2-9b-it','gemma-2'),
+            ('ERGODIC_ROTATION_SPECIALIST','huggingface-projects/gemma-2-9b-it','gemma-2'),
+            ('P_ADIC_SPECIALIST','huggingface-projects/llama-3.2-3B-Instruct','llama-3.2'),
+            ('THREE_ADIC_SPECIALIST','huggingface-projects/gemma-2-9b-it','gemma-2'),
+            ('ARCHIMEDEAN_ANALYST','huggingface-projects/gemma-2-9b-it','gemma-2'),
+            ('DIOPHANTINE_SPECIALIST','huggingface-projects/gemma-2-9b-it','gemma-2'),
+            ('PROOF_CREATOR_A','huggingface-projects/llama-3.2-3B-Instruct','llama-3.2'),
+            ('PROOF_CREATOR_B','huggingface-projects/gemma-2-9b-it','gemma-2'),
+            ('VERIFIER','huggingface-projects/gemma-2-9b-it','gemma-2'),
+            ('FORMAL_PROOF_AUDITOR','huggingface-projects/gemma-2-9b-it','gemma-2'),
+            ('COUNTER_AUDITOR','huggingface-projects/llama-3.2-3B-Instruct','llama-3.2'),
+            ('FALSIFIER','huggingface-projects/llama-3.2-3B-Instruct','llama-3.2'),
+            ('COUNTEREXAMPLE_HUNTER','huggingface-projects/llama-3.2-3B-Instruct','llama-3.2'),
+            ('REPLICATOR','huggingface-projects/gemma-2-9b-it','gemma-2'),
+            ('PROOF_SYNTHESIZER','huggingface-projects/gemma-2-9b-it','gemma-2'),
+            ('JUDGE','huggingface-projects/gemma-2-9b-it','gemma-2')]
+          print('matrix='+json.dumps({'include':[{'role':r,'space':s,'family':f} for r,s,f in roles]},separators=(',',':')))
+          PY
+
+  theory-agent:
+    needs: plan
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix: ${{ fromJson(needs.plan.outputs.matrix) }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: pip install --quiet hf-gradio
+      - name: Execute theory agent
+        env:
+          ROLE: ${{ matrix.role }}
+          SPACE: ${{ matrix.space }}
+          FAMILY: ${{ matrix.family }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p out
+          python - <<'PY'
+          import json, os, importlib.util
+          from pathlib import Path
+          spec=importlib.util.spec_from_file_location('farm_worker','worker/farm_worker.py')
+          fw=importlib.util.module_from_spec(spec); spec.loader.exec_module(fw)
+          mission=Path('mission/C256-THEORY-FARM.md').read_text()
+          lit=Path('literature/C256-BRIEF.md').read_text()
+          role=os.environ['ROLE']; space=os.environ['SPACE']; fam=os.environ['FAMILY']
+          prompt=f'''CEREBRON OMEGA — COLLATZ THEORY FARM\nROLE: {role}\n\n{mission}\n\nLITERATURE BRIEF:\n{lit}\n\nRULES: REALITY>COHERENCE; CLAIM<=EVIDENCE; distinguish PROVED/HYPOTHESIS/UNKNOWN; no cycle closure without arbitrary-N contradiction. Produce compact rigorous mathematics.'''
+          ok,text,meta=fw.invoke(space,prompt)
+          result={'schema':'cerebron-theory-farm-c256-v1','role':role,'space':space,'model_family':fam,'ok':bool(ok),'response':text if ok else None,'meta':meta,'evidence_status':'UNREVIEWED_EXTERNAL_AGENT_OUTPUT' if ok else 'NO_EXTERNAL_OUTPUT'}
+          Path('out/result.json').write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: theory-c256-${{ matrix.role }}
+          path: out/result.json
+          retention-days: 14
+
+  omega-fusion:
+    needs: theory-agent
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: theory-c256-*
+          path: results
+          merge-multiple: false
+      - shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          rows=[]
+          for p in Path('results').rglob('result.json'):
+            try: rows.append(json.loads(p.read_text()))
+            except: pass
+          ok=[r for r in rows if r.get('ok')]
+          accounting={'schema':'cerebron-theory-farm-c256-omega-v1','artifact_rows':len(rows),'successful_external_ai_calls':len(ok),'successful_model_families':sorted({r.get('model_family') for r in ok}),'successful_roles':sorted({r.get('role') for r in ok}),'claim_note':'Unaudited until master-hub verification.'}
+          Path('theory-c256-accounting.json').write_text(json.dumps(accounting,ensure_ascii=False,indent=2)+'\n')
+          Path('theory-c256-packet.txt').write_text('\n\n'.join('ROLE '+str(r.get('role'))+' | '+str(r.get('model_family'))+'\n'+str(r.get('response') or '') for r in ok))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: theory-c256-omega-packet
+          path: |
+            theory-c256-accounting.json
+            theory-c256-packet.txt
+          retention-days: 14
