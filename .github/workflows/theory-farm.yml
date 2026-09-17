@@ -4,6 +4,9 @@ on:
   push:
     paths:
       - '.github/workflows/theory-farm.yml'
+      - 'mission/**'
+      - 'literature/**'
+      - 'worker/**'
   workflow_dispatch:
 
 permissions:
