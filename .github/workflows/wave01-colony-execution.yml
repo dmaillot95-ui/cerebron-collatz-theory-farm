@@ -1,0 +1,31 @@
+name: Wave01 F01 to SIGMA Execution
+on:
+  push:
+    paths: ["wave01-trigger.txt",".github/workflows/wave01-colony-execution.yml"]
+permissions: {contents: write}
+jobs:
+  execute:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Produce traceable F01 capability packet
+        run: |
+          python - <<'PY'
+          import json,hashlib,os,datetime
+          task={"id":"W01-SIGMA-F01","claim":"For accelerated odd Collatz T(x)=(3x+1)/2^v2(3x+1), formalize the obligations for a claimed positive cycle.","farm":"F01","colony":"C03-SIGMA"}
+          result={"definitions":["x_i positive odd","a_i=v2(3*x_i+1)>=1","2^a_i*x_{i+1}=3*x_i+1","x_N=x_0"],"obligations":["all transitions exact","cycle closure exact","quantifiers explicit","finite checks cannot imply arbitrary-N","every universal contradiction must cover all admissible valuation words"],"classification":"FORMALIZATION_PACKET_NOT_PROOF"}
+          raw=json.dumps({"task":task,"result":result},sort_keys=True)
+          receipt={"schema":"wave01-real-farm-execution-v1","status":"PASS","execution_kind":"GITHUB_FARM_CODE_EXECUTION","farm":"F01","colony":"C03-SIGMA","task_id":task["id"],"output_sha256":hashlib.sha256(raw.encode()).hexdigest(),"executed_at":datetime.datetime.now(datetime.timezone.utc).isoformat(),"claim_limit":"Proves this farm workflow executed and produced a deterministic formalization packet; does not prove autonomous model reasoning or mathematical theorem."}
+          os.makedirs("wave01/results",exist_ok=True);os.makedirs("wave01/receipts",exist_ok=True)
+          open("wave01/results/W01-SIGMA-F01.json","w").write(raw+"\n")
+          open("wave01/receipts/W01-SIGMA-F01.json","w").write(json.dumps(receipt,indent=2)+"\n")
+          PY
+      - name: Persist
+        run: |
+          git config user.name cerebron-bot
+          git config user.email actions@users.noreply.github.com
+          git add wave01
+          git diff --cached --quiet && exit 0
+          git commit -m "receipt: execute F01 to SIGMA wave01"
+          git pull --rebase origin "${GITHUB_REF_NAME}" || true
+          git push origin "HEAD:${GITHUB_REF_NAME}"
