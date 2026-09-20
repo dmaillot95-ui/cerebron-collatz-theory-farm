@@ -1,0 +1,11 @@
+{
+  "schema": "wave01-real-farm-execution-v1",
+  "status": "PASS",
+  "execution_kind": "GITHUB_FARM_CODE_EXECUTION",
+  "farm": "F01",
+  "colony": "C03-SIGMA",
+  "task_id": "W01-SIGMA-F01",
+  "output_sha256": "a8e512e50c345efcc691f24908096495629f777e333fbe07be91016c0fe1a606",
+  "executed_at": "2026-09-20T19:54:47.658127+00:00",
+  "claim_limit": "Proves this farm workflow executed and produced a deterministic formalization packet; does not prove autonomous model reasoning or mathematical theorem."
+}
